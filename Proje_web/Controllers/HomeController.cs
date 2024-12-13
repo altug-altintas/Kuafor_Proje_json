@@ -60,7 +60,7 @@ namespace Proje_web.Controllers
                 SelectedAppUserName = string.Empty
             };
 
-            return View(model);
+            return Json(model);
         }
         [AllowAnonymous]
         [HttpPost]
@@ -75,7 +75,7 @@ namespace Proje_web.Controllers
                 Text = x.FirstName
             }).ToList();
 
-            return View(model);
+            return Json(model);
         }
 
 
@@ -104,7 +104,7 @@ namespace Proje_web.Controllers
             {
                 model.Takvimler = new List<KuaforTakvim>();
             }
-            return View(model);
+            return Json(model);
         }
         [AllowAnonymous]
         [HttpPost("Kuafor/{userId}")]
@@ -141,7 +141,7 @@ namespace Proje_web.Controllers
             }
 
             model.Personeller = _personelRepo.GetDefaults(x => x.Statu != Statu.Passive && x.AppUserID == appUserId);
-            return View(model);
+            return Json(model);
         }
 
 
@@ -164,7 +164,7 @@ namespace Proje_web.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
-            return View(new  Proje_web.Models.ErrorViewModel{ RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            return Json(new  Proje_web.Models.ErrorViewModel{ RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
 

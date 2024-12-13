@@ -81,24 +81,27 @@ namespace Proje_web.Controllers
 
             }
 
-            return View(dTO);
+            return Json(dTO);
         }
 
 
         public IActionResult Login(string returnUrl)  //kişinin ulaşmak istediği sayfa 
         {
 
-            return View(new LoginDTO() { ReturnUrl = returnUrl });
+            return Json(new LoginDTO() { ReturnUrl = returnUrl });
+
         }
 
         [HttpPost]
 
-        public async Task<IActionResult> Login(LoginDTO dTO)
+        public async Task<IActionResult> Login([FromBody] LoginDTO dTO)
         {
 
             if (ModelState.IsValid)
             {
                 AppUser appUser = await _userManager.FindByEmailAsync(dTO.Email);
+                var user = _userRepo.Authentication(dTO.Email, dTO.Password);
+
                 if (appUser != null)
                 {
                     if (appUser.StatuTime <= DateTime.Now)
@@ -111,43 +114,48 @@ namespace Proje_web.Controllers
                         appUser.Statu = Statu.Active;
                         await _userManager.UpdateAsync(appUser);
                     }
+
                     if (appUser.Statu == Statu.Active || appUser.Statu == Statu.Modified)
                     {
                         SignInResult result = await _signInManager.PasswordSignInAsync(appUser.UserName, dTO.Password, false, false);
+
                         if (result.Succeeded)
                         {
-                            //var claims = new List<Claim>
-                            //        {
-                            //         new Claim(ClaimTypes.Name, appUser.UserName)
-                            //       };
-
-                            //var claimsIdentity = new ClaimsIdentity(claims, "CookieAuth");
-                            //await HttpContext.SignInAsync("CookieAuth", new ClaimsPrincipal(claimsIdentity));
-
-
                             var roles = await _userManager.GetRolesAsync(appUser);
+                            //   var token = GenerateJwtToken(appUser);
 
                             if (roles.Contains("Admın"))
                             {
-                                return Redirect(dTO.ReturnUrl ?? "/admin/AppAdmin/index");
+                                string redirectUrl = "/admin/AppAdmin/index";
+                                return Json(new { success = true, token = user.Token, redirectUrl = redirectUrl });
                             }
                             else
                             {
-                                return Redirect(dTO.ReturnUrl ?? "/member/appuser/index");
+                                string redirectUrl = "/member/appuser/index";
+                                return Json(new { success = true, token = user.Token, redirectUrl = redirectUrl });
                             }
+
+                        }
+                        else
+                        {
+                            return Json(new { success = false, message = "Giriş başarısız oldu" });
                         }
                     }
                     else
                     {
-
-                        return View(dTO);
+                        return Json(new { success = false, message = "Kullanıcı aktif değil" });
                     }
 
 
+
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Kullanıcı Mevcut değil" });
                 }
 
             }
-            return View(dTO);
+            return Json(dTO);
 
         }
     }

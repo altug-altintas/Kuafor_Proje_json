@@ -16,10 +16,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Proje_web.Areas.Member.Models.VMs;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace Proje_web.Areas.Member.Controllers
 {
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Area("Member")]
     public class UserSettingController : Controller
     {
@@ -45,18 +46,20 @@ namespace Proje_web.Areas.Member.Controllers
         [HttpGet]
         public async Task<IActionResult> Setting(int id)
         {
+
+
             AppUser appUser = await _userManager.GetUserAsync(User);
 
             var updateuser = _mapper.Map<UserUpdateDTO>(appUser);
 
 
-            return View(updateuser);
+            return Json(updateuser);
 
 
         }
 
         [HttpPost]
-        public async Task<IActionResult> Setting(UserUpdateDTO dTO)
+        public async Task<IActionResult> Setting([FromBody]UserUpdateDTO dTO)
         {
             if (ModelState.IsValid && dTO.Image != null)
             {
@@ -103,7 +106,8 @@ namespace Proje_web.Areas.Member.Controllers
                 var updateResult = await _userManager.UpdateAsync(appUser);
 
 
-                return RedirectToAction("Setting");
+                return Json(new { success = true, redirectUrl = Url.Action("Setting") });
+
 
             }
 
@@ -140,7 +144,8 @@ namespace Proje_web.Areas.Member.Controllers
 
                 var updateResult = await _userManager.UpdateAsync(appUser);
 
-                return RedirectToAction("Setting");
+                return Json(new { success = true, redirectUrl = Url.Action("Setting") });
+
 
             }
         }
@@ -151,7 +156,8 @@ namespace Proje_web.Areas.Member.Controllers
 
             await _userRepo.Delete(appUser);
 
-            return RedirectToAction("LogOut");
+            return Json(new { success = true, redirectUrl = Url.Action("LogOut") });
+
 
         }
 
